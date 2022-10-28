@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 
 const MethodChannel _mChannel = MethodChannel('uni_links/messages');
 const EventChannel _eChannel = EventChannel('uni_links/events');
-Stream<String> _stream;
+Stream<String>? _stream;
 
 /// Returns a [Future], which completes to one of the following:
 ///
@@ -16,7 +16,7 @@ Stream<String> _stream;
 ///   * a [PlatformException], if the invocation failed in the platform plugin.
 Future<String> getInitialLink() async {
   final initialLink = await _mChannel.invokeMethod<String>('getInitialLink');
-  return initialLink;
+  return initialLink ?? '';
 }
 
 /// A convenience method that returns the initially stored link
@@ -26,7 +26,6 @@ Future<String> getInitialLink() async {
 /// a [FormatException] is thrown.
 Future<Uri> getInitialUri() async {
   final link = await getInitialLink();
-  if (link == null) return null;
   return Uri.parse(link);
 }
 
@@ -62,11 +61,7 @@ Stream<Uri> getUriLinksStream() {
   return getLinksStream().transform<Uri>(
     StreamTransformer<String, Uri>.fromHandlers(
       handleData: (String link, EventSink<Uri> sink) {
-        if (link == null) {
-          sink.add(null);
-        } else {
-          sink.add(Uri.parse(link));
-        }
+        sink.add(Uri.parse(link));
       },
     ),
   );
